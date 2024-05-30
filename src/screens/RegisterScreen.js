@@ -6,6 +6,7 @@ import InputField from '../components/InputField';
 import PickerField from '../components/PickerField';
 import ErrorText from '../components/ErrorText';
 import CustomHeader from '../components/CustomHeader';
+import Background from '../components/Background';
 
 const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -64,100 +65,104 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <Background>
       <CustomHeader title="Registrati" navigation={navigation} />
-      <View style={styles.innerContainer}>
-        <ErrorText error={errors.general} />
-        <InputField
-          placeholder="Nome"
-          value={name}
-          onChangeText={setName}
-          error={errors.name}
-        />
-        <ErrorText error={errors.name} />
-        <InputField
-          placeholder="Cognome"
-          value={surname}
-          onChangeText={setSurname}
-          error={errors.surname}
-        />
-        <ErrorText error={errors.surname} />
-        <InputField
-          placeholder="Nome utente"
-          value={username}
-          onChangeText={setUsername}
-          error={errors.username}
-        />
-        <ErrorText error={errors.username} />
-        <InputField
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          error={errors.password}
-        />
-        <ErrorText error={errors.password} />
-        <InputField
-          placeholder="Conferma Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-          error={errors.confirmPassword}
-        />
-        <ErrorText error={errors.confirmPassword} />
-        <InputField
-          placeholder="Età"
-          value={age}
-          onChangeText={setAge}
-          keyboardType="numeric"
-          error={errors.age}
-        />
-        <ErrorText error={errors.age} />
-        <InputField
-          placeholder="Peso"
-          value={weight}
-          onChangeText={setWeight}
-          keyboardType="numeric"
-          error={errors.weight}
-        />
-        <ErrorText error={errors.weight} />
-        <InputField
-          placeholder="Altezza"
-          value={height}
-          onChangeText={setHeight}
-          keyboardType="numeric"
-          error={errors.height}
-        />
-        <ErrorText error={errors.height} />
-        <PickerField
-          label="Ruolo"
-          selectedValue={role}
-          onValueChange={setRole}
-          items={[
-            { label: 'User', value: 'user' },
-            { label: 'Admin', value: 'admin' },
-          ]}
-        />
-        <Button title="Registrati" onPress={handleRegister} buttonStyle={styles.button} />
-        <Text
-          style={styles.link}
-          onPress={() => navigation.navigate('Login')}
-        >
-          Hai già un account? Accedi
-        </Text>
-      </View>
-    </ScrollView>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.innerContainer}>
+          <ErrorText error={errors.general} />
+          <InputField
+            placeholder="Nome"
+            value={name}
+            onChangeText={setName}
+            error={errors.name}
+          />
+          <ErrorText error={errors.name} />
+          <InputField
+            placeholder="Cognome"
+            value={surname}
+            onChangeText={setSurname}
+            error={errors.surname}
+          />
+          <ErrorText error={errors.surname} />
+          <InputField
+            placeholder="Nome utente"
+            value={username}
+            onChangeText={setUsername}
+            error={errors.username}
+          />
+          <ErrorText error={errors.username} />
+          <InputField
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            error={errors.password}
+          />
+          <ErrorText error={errors.password} />
+          <InputField
+            placeholder="Conferma Password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            error={errors.confirmPassword}
+          />
+          <ErrorText error={errors.confirmPassword} />
+          <InputField
+            placeholder="Età"
+            value={age}
+            onChangeText={setAge}
+            keyboardType="numeric"
+            error={errors.age}
+          />
+          <ErrorText error={errors.age} />
+          <InputField
+            placeholder="Peso"
+            value={weight}
+            onChangeText={setWeight}
+            keyboardType="numeric"
+            error={errors.weight}
+          />
+          <ErrorText error={errors.weight} />
+          <InputField
+            placeholder="Altezza"
+            value={height}
+            onChangeText={setHeight}
+            keyboardType="numeric"
+            error={errors.height}
+          />
+          <ErrorText error={errors.height} />
+          <PickerField
+            label="Ruolo"
+            selectedValue={role}
+            onValueChange={setRole}
+            items={[
+              { label: 'Utente', value: 'user' },
+              { label: 'Allenatore', value: 'admin' },
+            ]}
+          />
+          <Button title="Registrati" onPress={handleRegister} buttonStyle={styles.button} />
+          <Text
+            style={styles.link}
+            onPress={() => navigation.navigate('Login')}
+          >
+            Hai già un account? Accedi
+          </Text>
+        </View>
+      </ScrollView>
+    </Background>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 6,
   },
   innerContainer: {
+    paddingTop: 10,
     flex: 1,
     justifyContent: 'center',
-    padding: 16,
   },
   button: {
     backgroundColor: '#2089dc',

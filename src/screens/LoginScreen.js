@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, TextInput, Alert, StyleSheet } from 'react-native';
-import { Button, Text } from 'react-native-elements';
+import { View, TextInput, Alert, StyleSheet, Text } from 'react-native';
+import { Button } from 'react-native-elements';
 import axios from 'axios';
 import CustomHeader from '../components/CustomHeader';
+import Background from '../components/Background';
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -24,28 +25,30 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <CustomHeader title="Accedi" navigation={navigation} />
-      <View style={styles.innerContainer}>
-        <TextInput
-          placeholder="Nome utente"
-          value={username}
-          onChangeText={setUsername}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-        />
-        <Button title="Accedi" onPress={handleLogin} buttonStyle={styles.button} />
-        <Text style={styles.link} onPress={() => navigation.navigate('Register')}>
-          Non hai un account? Registrati
-        </Text>
+    <Background>
+      <View style={styles.container}>
+        <CustomHeader title="Accedi" navigation={navigation} />
+        <View style={styles.innerContainer}>
+          <TextInput
+            placeholder="Nome utente"
+            value={username}
+            onChangeText={setUsername}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={styles.input}
+          />
+          <Button title="Accedi" onPress={handleLogin} buttonStyle={styles.button} />
+          <Text style={styles.link} onPress={() => navigation.navigate('Register')}>
+            Non hai un account? Registrati
+          </Text>
+        </View>
       </View>
-    </View>
+    </Background>
   );
 };
 
@@ -57,13 +60,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 16,
+    borderRadius: 10,
   },
   input: {
     height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 5,
+    paddingLeft: 10,
     marginBottom: 12,
-    paddingLeft: 8,
   },
   button: {
     backgroundColor: '#2089dc',

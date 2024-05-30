@@ -1,28 +1,35 @@
 import React from 'react';
-import { TextInput, StyleSheet } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
+import { Input } from 'react-native-elements';
 
-const InputField = ({ placeholder, value, onChangeText, secureTextEntry, error }) => {
+const InputField = ({ placeholder, value, onChangeText, secureTextEntry, error, keyboardType }) => {
   return (
-    <TextInput
-      placeholder={placeholder}
-      value={value}
-      onChangeText={onChangeText}
-      secureTextEntry={secureTextEntry}
-      style={[styles.input, error && styles.errorInput]}
-    />
+    <View style={styles.container}>
+      <Input
+        placeholder={placeholder}
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={secureTextEntry}
+        errorMessage={error}
+        keyboardType={keyboardType}
+        inputStyle={styles.input}
+        containerStyle={styles.inputContainer}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingLeft: 8,
+  container: {
+    marginBottom: 1,
   },
-  errorInput: {
-    borderColor: 'red',
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    paddingLeft: 10,
+  },
+  inputContainer: {
+    borderBottomWidth: 0,
   },
 });
 
