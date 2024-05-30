@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, TextInput, Alert, StyleSheet, Text } from 'react-native';
 import { Button } from 'react-native-elements';
 import axios from 'axios';
-import CustomHeader from '../components/CustomHeader';
 import Background from '../components/Background';
 
 const LoginScreen = ({ navigation }) => {
@@ -27,7 +26,6 @@ const LoginScreen = ({ navigation }) => {
   return (
     <Background>
       <View style={styles.container}>
-        <CustomHeader title="Accedi" navigation={navigation} />
         <View style={styles.innerContainer}>
           <TextInput
             placeholder="Nome utente"

@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "#fff",
     borderRadius: 5,
+    justifyContent: "center",
   },
   picker: {
     height: 40,

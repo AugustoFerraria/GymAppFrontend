@@ -1,14 +1,12 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, Text } from 'react-native-elements';
-import CustomHeader from '../components/CustomHeader';
 
 const HomeScreen = ({ route, navigation }) => {
   const { role } = route.params;
 
   return (
     <View style={styles.container}>
-      <CustomHeader title="Home" navigation={navigation} />
       <View style={styles.innerContainer}>
         <Button
           title="Rutina"

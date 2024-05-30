@@ -5,7 +5,6 @@ import axios from 'axios';
 import InputField from '../components/InputField';
 import PickerField from '../components/PickerField';
 import ErrorText from '../components/ErrorText';
-import CustomHeader from '../components/CustomHeader';
 import Background from '../components/Background';
 
 const RegisterScreen = ({ navigation }) => {
@@ -66,7 +65,6 @@ const RegisterScreen = ({ navigation }) => {
 
   return (
     <Background>
-      <CustomHeader title="Registrati" navigation={navigation} />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.innerContainer}>
           <ErrorText error={errors.general} />
@@ -157,15 +155,17 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 6,
+    padding: 16,
+    margin: 0,
   },
   innerContainer: {
-    paddingTop: 10,
+    paddingTop: 25,
     flex: 1,
     justifyContent: 'center',
   },
   button: {
     backgroundColor: '#2089dc',
+    marginTop: 16,
   },
   link: {
     marginTop: 16,

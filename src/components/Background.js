@@ -6,7 +6,7 @@ const Background = ({ children }) => {
     <ImageBackground
       source={require('../../assets/Gym.jpg')}
       style={styles.background}
-      imageStyle={{ opacity: 1 }} // Ajusta la opacidad de la imagen
+      imageStyle={{ opacity: 1 }}
     >
       <View style={styles.overlay}>
         {children}
