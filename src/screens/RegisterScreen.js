@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { ScrollView, Alert, StyleSheet, View, Text } from 'react-native';
+import { Button } from 'react-native-elements';
 import axios from 'axios';
+import InputField from '../components/InputField';
+import PickerField from '../components/PickerField';
+import ErrorText from '../components/ErrorText';
+import CustomHeader from '../components/CustomHeader';
 
 const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -48,8 +52,7 @@ const RegisterScreen = ({ navigation }) => {
         role,
       });
       console.log('Registration successful', res.data);
-      const userId = res.data.user.id; // Ajusta esto según la estructura de la respuesta real
-      navigation.navigate('UserProfile', { userId });
+      navigation.navigate('Home', { role: role });
     } catch (error) {
       console.error('Error registering', error);
       if (error.response && error.response.data && error.response.data.msg) {
@@ -62,87 +65,87 @@ const RegisterScreen = ({ navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Registrati</Text>
-      {errors.general && <Text style={styles.errorText}>{errors.general}</Text>}
-      <TextInput
-        placeholder="Nome"
-        value={name}
-        onChangeText={setName}
-        style={[styles.input, errors.name && styles.errorInput]}
-      />
-      {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-      <TextInput
-        placeholder="Cognome"
-        value={surname}
-        onChangeText={setSurname}
-        style={[styles.input, errors.surname && styles.errorInput]}
-      />
-      {errors.surname && <Text style={styles.errorText}>{errors.surname}</Text>}
-      <TextInput
-        placeholder="Nome utente"
-        value={username}
-        onChangeText={setUsername}
-        style={[styles.input, errors.username && styles.errorInput]}
-      />
-      {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={[styles.input, errors.password && styles.errorInput]}
-      />
-      {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-      <TextInput
-        placeholder="Conferma Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-        style={[styles.input, errors.confirmPassword && styles.errorInput]}
-      />
-      {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
-      <TextInput
-        placeholder="Età"
-        value={age}
-        onChangeText={setAge}
-        keyboardType="numeric"
-        style={[styles.input, errors.age && styles.errorInput]}
-      />
-      {errors.age && <Text style={styles.errorText}>{errors.age}</Text>}
-      <TextInput
-        placeholder="Peso"
-        value={weight}
-        onChangeText={setWeight}
-        keyboardType="numeric"
-        style={[styles.input, errors.weight && styles.errorInput]}
-      />
-      {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
-      <TextInput
-        placeholder="Altezza"
-        value={height}
-        onChangeText={setHeight}
-        keyboardType="numeric"
-        style={[styles.input, errors.height && styles.errorInput]}
-      />
-      {errors.height && <Text style={styles.errorText}>{errors.height}</Text>}
-      <View style={styles.pickerContainer}>
-        <Text style={styles.pickerLabel}>Ruolo</Text>
-        <Picker
+      <CustomHeader title="Registrati" navigation={navigation} />
+      <View style={styles.innerContainer}>
+        <ErrorText error={errors.general} />
+        <InputField
+          placeholder="Nome"
+          value={name}
+          onChangeText={setName}
+          error={errors.name}
+        />
+        <ErrorText error={errors.name} />
+        <InputField
+          placeholder="Cognome"
+          value={surname}
+          onChangeText={setSurname}
+          error={errors.surname}
+        />
+        <ErrorText error={errors.surname} />
+        <InputField
+          placeholder="Nome utente"
+          value={username}
+          onChangeText={setUsername}
+          error={errors.username}
+        />
+        <ErrorText error={errors.username} />
+        <InputField
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          error={errors.password}
+        />
+        <ErrorText error={errors.password} />
+        <InputField
+          placeholder="Conferma Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          error={errors.confirmPassword}
+        />
+        <ErrorText error={errors.confirmPassword} />
+        <InputField
+          placeholder="Età"
+          value={age}
+          onChangeText={setAge}
+          keyboardType="numeric"
+          error={errors.age}
+        />
+        <ErrorText error={errors.age} />
+        <InputField
+          placeholder="Peso"
+          value={weight}
+          onChangeText={setWeight}
+          keyboardType="numeric"
+          error={errors.weight}
+        />
+        <ErrorText error={errors.weight} />
+        <InputField
+          placeholder="Altezza"
+          value={height}
+          onChangeText={setHeight}
+          keyboardType="numeric"
+          error={errors.height}
+        />
+        <ErrorText error={errors.height} />
+        <PickerField
+          label="Ruolo"
           selectedValue={role}
-          onValueChange={(itemValue) => setRole(itemValue)}
-          style={styles.picker}
+          onValueChange={setRole}
+          items={[
+            { label: 'User', value: 'user' },
+            { label: 'Admin', value: 'admin' },
+          ]}
+        />
+        <Button title="Registrati" onPress={handleRegister} buttonStyle={styles.button} />
+        <Text
+          style={styles.link}
+          onPress={() => navigation.navigate('Login')}
         >
-          <Picker.Item label="User" value="user" />
-          <Picker.Item label="Admin" value="admin" />
-        </Picker>
+          Hai già un account? Accedi
+        </Text>
       </View>
-      <Button title="Registrati" onPress={handleRegister} />
-      <Text
-        style={styles.link}
-        onPress={() => navigation.navigate('Login')}
-      >
-        Hai già un account? Accedi
-      </Text>
     </ScrollView>
   );
 };
@@ -150,39 +153,14 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  innerContainer: {
+    flex: 1,
     justifyContent: 'center',
     padding: 16,
   },
-  title: {
-    fontSize: 24,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingLeft: 8,
-  },
-  errorInput: {
-    borderColor: 'red',
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 12,
-  },
-  pickerContainer: {
-    marginBottom: 12,
-  },
-  pickerLabel: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  picker: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
+  button: {
+    backgroundColor: '#2089dc',
   },
   link: {
     marginTop: 16,
