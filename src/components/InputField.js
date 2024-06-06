@@ -1,10 +1,13 @@
 import React from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { Input } from 'react-native-elements';
 
-const InputField = ({ placeholder, value, onChangeText, secureTextEntry, error, keyboardType }) => {
+const InputField = ({ label, placeholder, value, onChangeText, secureTextEntry, error, keyboardType, required }) => {
   return (
     <View style={styles.container}>
+      <Text style={styles.label}>
+        {label} {required && <Text style={styles.asterisk}>*</Text>}
+      </Text>
       <Input
         placeholder={placeholder}
         value={value}
@@ -22,6 +25,13 @@ const InputField = ({ placeholder, value, onChangeText, secureTextEntry, error, 
 const styles = StyleSheet.create({
   container: {
     marginBottom: 1,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  asterisk: {
+    color: 'red',
   },
   input: {
     backgroundColor: '#fff',

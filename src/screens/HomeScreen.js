@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Button, Text } from 'react-native-elements';
 
 const HomeScreen = ({ route, navigation }) => {
-  const { role } = route.params;
+  const role = route.params?.role || 'user';
 
   return (
     <View style={styles.container}>
