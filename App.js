@@ -1,15 +1,18 @@
-import * as React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { Icon } from 'react-native-elements';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import jwtDecode from 'jwt-decode';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import RutinaScreen from './src/screens/RutinaScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
 import ExerciseDetailScreen from './src/screens/ExerciseDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import CreateExerciseScreen from './src/screens/CreateExerciseScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -39,8 +42,24 @@ function ProgressStackNavigator() {
         headerLeft: null,
       }}
     >
-      <Stack.Screen name="Progresos" component={ProgressScreen} options={{ headerTitle: 'Progresos' }} />
+      <Stack.Screen
+        name="Progresos"
+        component={ProgressScreen}
+        options={({ navigation }) => ({
+          headerTitle: 'Progresos',
+          headerRight: () => (
+            <Icon
+              name="add"
+              type="material"
+              color="#fff"
+              onPress={() => navigation.navigate('CreateExercise')}
+              containerStyle={{ marginRight: 15 }}
+            />
+          ),
+        })}
+      />
       <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} options={{ headerTitle: 'Detalle del Ejercicio' }} />
+      <Stack.Screen name="CreateExercise" component={CreateExerciseScreen} options={{ headerTitle: 'Crear Ejercicio' }} />
     </Stack.Navigator>
   );
 }
@@ -88,11 +107,33 @@ function HomeTabNavigator() {
 }
 
 export default function App() {
+  const [initialRoute, setInitialRoute] = useState('Login');
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          if (decoded.exp * 1000 > Date.now()) {
+            setInitialRoute('Home');
+          } else {
+            AsyncStorage.removeItem('token');
+          }
+        } catch (error) {
+          console.error('Invalid token:', error);
+          AsyncStorage.removeItem('token');
+        }
+      }
+    };
+    checkAuth();
+  }, []);
+
   return (
     <PaperProvider>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="Login"
+          initialRouteName={initialRoute}
           screenOptions={{
             headerStyle: { backgroundColor: '#FFD700' },
             headerTintColor: '#fff',

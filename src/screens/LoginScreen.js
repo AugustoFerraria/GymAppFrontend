@@ -8,6 +8,7 @@ import Background from '../components/Background';
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
     console.log('Login button pressed');
@@ -19,20 +20,22 @@ const LoginScreen = ({ navigation }) => {
         password,
       });
       console.log('Login successful', res.data);
-      const { token, user } = res.data;  // Suponiendo que res.data también contiene información del usuario
+      const { token, user } = res.data;
       await AsyncStorage.setItem('token', token);
-      console.log('Token stored in AsyncStorage');
+      localStorage.setItem('token', token); // Guardar token en localStorage
+      console.log('Token stored in AsyncStorage', token);
       navigation.navigate('Home', { role: user.role });
     } catch (error) {
       console.error('Error logging in:', error.response ? error.response.data : error.message);
-      Alert.alert('Errore di accesso', 'Credenziali non valide o errore del server');
+      setError(error.response && error.response.data && error.response.data.msg ? error.response.data.msg : 'Errore del server');
     }
-  };
+  };  
 
   return (
     <Background>
       <View style={styles.container}>
         <View style={styles.innerContainer}>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
           <TextInput
             placeholder="Email"
             value={email}
@@ -81,6 +84,11 @@ const styles = StyleSheet.create({
   link: {
     marginTop: 16,
     color: 'blue',
+    textAlign: 'center',
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 12,
     textAlign: 'center',
   },
 });
