@@ -7,7 +7,8 @@ import { Icon } from 'react-native-elements';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import RutinaScreen from './src/screens/RutinaScreen';
-import EserciziScreen from './src/screens/EserciziScreen';
+import ProgressScreen from './src/screens/ProgressScreen';
+import ExerciseDetailScreen from './src/screens/ExerciseDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 
 const Stack = createStackNavigator();
@@ -28,7 +29,7 @@ function RutinaStackNavigator() {
   );
 }
 
-function EserciziStackNavigator() {
+function ProgressStackNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -38,7 +39,8 @@ function EserciziStackNavigator() {
         headerLeft: null,
       }}
     >
-      <Stack.Screen name="Esercizi" component={EserciziScreen} options={{ headerTitle: 'Esercizi' }} />
+      <Stack.Screen name="Progresos" component={ProgressScreen} options={{ headerTitle: 'Progresos' }} />
+      <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} options={{ headerTitle: 'Detalle del Ejercicio' }} />
     </Stack.Navigator>
   );
 }
@@ -53,7 +55,7 @@ function ProfileStackNavigator() {
         headerLeft: null,
       }}
     >
-      <Stack.Screen name="Profilo" component={ProfileScreen} options={{ headerTitle: 'Profilo' }} />
+      <Stack.Screen name="Perfil" component={ProfileScreen} options={{ headerTitle: 'Perfil' }} />
     </Stack.Navigator>
   );
 }
@@ -66,9 +68,9 @@ function HomeTabNavigator() {
           let iconName;
           if (route.name === 'Rutina') {
             iconName = 'home';
-          } else if (route.name === 'Esercizi') {
+          } else if (route.name === 'Progresos') {
             iconName = 'fitness-center';
-          } else if (route.name === 'Profilo') {
+          } else if (route.name === 'Perfil') {
             iconName = 'person';
           }
           return <Icon name={iconName} type="material" color={color} size={size} />;
@@ -79,8 +81,8 @@ function HomeTabNavigator() {
       })}
     >
       <Tab.Screen name="Rutina" component={RutinaStackNavigator} />
-      <Tab.Screen name="Esercizi" component={EserciziStackNavigator} />
-      <Tab.Screen name="Profilo" component={ProfileStackNavigator} />
+      <Tab.Screen name="Progresos" component={ProgressStackNavigator} />
+      <Tab.Screen name="Perfil" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );
 }
@@ -100,12 +102,12 @@ export default function App() {
           <Stack.Screen 
             name="Login" 
             component={LoginScreen} 
-            options={{ title: 'Accedi' }} 
+            options={{ title: 'Acceder' }} 
           />
           <Stack.Screen 
             name="Register" 
             component={RegisterScreen} 
-            options={{ title: 'Registrati' }} 
+            options={{ title: 'Registrar' }} 
           />
           <Stack.Screen 
             name="Home" 
