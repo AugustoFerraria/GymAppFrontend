@@ -27,7 +27,7 @@ function RutinaStackNavigator() {
         headerLeft: null,
       }}
     >
-      <Stack.Screen name="Rutina" component={RutinaScreen} options={{ headerTitle: 'Rutina' }} />
+      <Stack.Screen name="Rutina" component={RutinaScreen} options={{ headerTitle: 'Routine' }} />
     </Stack.Navigator>
   );
 }
@@ -46,7 +46,7 @@ function ProgressStackNavigator() {
         name="Progresos"
         component={ProgressScreen}
         options={({ navigation }) => ({
-          headerTitle: 'Progresos',
+          headerTitle: 'Progressi',
           headerRight: () => (
             <Icon
               name="add"
@@ -58,8 +58,8 @@ function ProgressStackNavigator() {
           ),
         })}
       />
-      <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} options={{ headerTitle: 'Detalle del Ejercicio' }} />
-      <Stack.Screen name="CreateExercise" component={CreateExerciseScreen} options={{ headerTitle: 'Crear Ejercicio' }} />
+      <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} options={{ headerTitle: 'Dettaglio Esercizio' }} />
+      <Stack.Screen name="CreateExercise" component={CreateExerciseScreen} options={{ headerTitle: 'Crea Esercizio' }} />
     </Stack.Navigator>
   );
 }
@@ -74,7 +74,7 @@ function ProfileStackNavigator() {
         headerLeft: null,
       }}
     >
-      <Stack.Screen name="Perfil" component={ProfileScreen} options={{ headerTitle: 'Perfil' }} />
+      <Stack.Screen name="Perfil" component={ProfileScreen} options={{ headerTitle: 'Profilo' }} />
     </Stack.Navigator>
   );
 }
@@ -99,9 +99,9 @@ function HomeTabNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Rutina" component={RutinaStackNavigator} />
-      <Tab.Screen name="Progresos" component={ProgressStackNavigator} />
-      <Tab.Screen name="Perfil" component={ProfileStackNavigator} />
+      <Tab.Screen name="Rutina" component={RutinaStackNavigator} options={{ title: 'Routine' }} />
+      <Tab.Screen name="Progresos" component={ProgressStackNavigator} options={{ title: 'Progressi' }} />
+      <Tab.Screen name="Perfil" component={ProfileStackNavigator} options={{ title: 'Profilo' }} />
     </Tab.Navigator>
   );
 }
@@ -121,7 +121,7 @@ export default function App() {
             AsyncStorage.removeItem('token');
           }
         } catch (error) {
-          console.error('Invalid token:', error);
+          console.error('Token non valido:', error);
           AsyncStorage.removeItem('token');
         }
       }
@@ -143,12 +143,12 @@ export default function App() {
           <Stack.Screen 
             name="Login" 
             component={LoginScreen} 
-            options={{ title: 'Acceder' }} 
+            options={{ title: 'Accedi' }} 
           />
           <Stack.Screen 
             name="Register" 
             component={RegisterScreen} 
-            options={{ title: 'Registrar' }} 
+            options={{ title: 'Registrati' }} 
           />
           <Stack.Screen 
             name="Home" 

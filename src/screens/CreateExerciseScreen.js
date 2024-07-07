@@ -16,29 +16,29 @@ const CreateExerciseScreen = ({ navigation }) => {
       }, {
         headers: { 'x-auth-token': token }
       });
-      Alert.alert('Exito', 'Ejercicio creado con éxito');
+      Alert.alert('Successo', 'Esercizio creato con successo');
       navigation.goBack();
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Hubo un error al crear el ejercicio');
+      Alert.alert('Errore', "C'è stato un errore nella creazione dell'esercizio");
     }
   };
 
   return (
     <View style={styles.container}>
       <TextInput
-        placeholder="Nombre del ejercicio"
+        placeholder="Nome dell'esercizio"
         value={name}
         onChangeText={setName}
         style={styles.input}
       />
       <TextInput
-        placeholder="Descripción del ejercicio"
+        placeholder="Descrizione dell'esercizio"
         value={description}
         onChangeText={setDescription}
         style={styles.input}
       />
-      <Button title="Crear Ejercicio" onPress={handleCreateExercise} />
+      <Button title="Crea Esercizio" onPress={handleCreateExercise} />
     </View>
   );
 };

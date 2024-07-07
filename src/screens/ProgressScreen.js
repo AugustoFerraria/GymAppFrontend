@@ -56,7 +56,7 @@ const ProgressScreen = () => {
           );
           setData(res.data);
         } catch (error) {
-          console.error("Error fetching progress data:", error);
+          console.error("Errore durante il recupero dei dati di progresso:", error);
         }
       }
     };
@@ -69,7 +69,7 @@ const ProgressScreen = () => {
 
     if (isNaN(value) || !selectedExercise) {
       Alert.alert(
-        "Por favor ingrese valores válidos y seleccione un ejercicio."
+        "Per favore inserisci valori validi e seleziona un esercizio."
       );
       return;
     }
@@ -86,7 +86,23 @@ const ProgressScreen = () => {
       setWeight("");
       setReps("");
     } catch (error) {
-      console.error("Error adding progress:", error);
+      console.error("Errore durante l'aggiunta del progresso:", error);
+    }
+  };
+
+  const handleExerciseChange = async (exerciseId) => {
+    setSelectedExercise(exerciseId);
+    setData([]);
+
+    if (userId && exerciseId) {
+      try {
+        const res = await axios.get(
+          `http://localhost:3001/api/progresses?userId=${userId}&exerciseId=${exerciseId}`
+        );
+        setData(res.data);
+      } catch (error) {
+        console.error("Errore durante il recupero dei dati di progresso:", error);
+      }
     }
   };
 
@@ -95,13 +111,13 @@ const ProgressScreen = () => {
       isWeightMode ? entry.weight : entry.reps
     );
 
-    if (filteredData.length === 0) return <Text>No data available</Text>;
+    if (filteredData.length === 0) return <Text>Nessun dato disponibile</Text>;
 
     const dates = filteredData.map((entry) => {
       const date = new Date(entry.date);
       return date instanceof Date && !isNaN(date)
         ? date.toLocaleDateString()
-        : "Invalid Date";
+        : "Data non valida";
     });
 
     const values = filteredData.map((entry) =>
@@ -118,29 +134,53 @@ const ProgressScreen = () => {
             },
           ],
         }}
-        width={screenWidth - 40} // from react-native
+        width={screenWidth - 40}
         height={300}
         yAxisSuffix={isWeightMode ? "kg" : "reps"}
         chartConfig={{
-          backgroundColor: "#e26a00",
-          backgroundGradientFrom: "#fb8c00",
-          backgroundGradientTo: "#ffa726",
-          decimalPlaces: 2, // optional, defaults to 2dp
-          color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-          labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+          backgroundColor: "#B0B0B0",
+          backgroundGradientFrom: "rgba(70, 77, 79, 0.6)",
+          backgroundGradientTo: "rgba(0, 0, 0, 0.6)",
+          decimalPlaces: 0,
+          color: (opacity = 1) => `rgba(243, 243, 25, ${opacity})`,
+          labelColor: (opacity = 1) => `rgba(243, 243, 25, ${opacity})`,
           style: {
             borderRadius: 16,
           },
           propsForDots: {
             r: "6",
             strokeWidth: "2",
-            stroke: "#ffa726",
+            stroke: "#FFD700",
           },
+          propsForLabels: {
+            fontSize: "12",
+            fontWeight: "bold",
+            fill: "#FFD700",
+          },
+          yAxisLabel: "",
+          yAxisInterval: 1,
         }}
         bezier
         style={{
           marginVertical: 8,
           borderRadius: 16,
+        }}
+        decorator={() => {
+          return values.map((value, index) => {
+            return (
+              <Text
+                key={index}
+                style={{
+                  position: "absolute",
+                  top: `${300 - value}px`,
+                  left: `${index * (screenWidth - 40) / values.length}px`,
+                  color: "#FFD700",
+                }}
+              >
+                {value}
+              </Text>
+            );
+          });
         }}
       />
     );
@@ -152,9 +192,9 @@ const ProgressScreen = () => {
         <Picker
           selectedValue={selectedExercise}
           style={styles.picker}
-          onValueChange={(itemValue) => setSelectedExercise(itemValue)}
+          onValueChange={handleExerciseChange}
         >
-          <Picker.Item label="Seleccionar Ejercicio" value="" />
+          <Picker.Item label="Esercizio" value="" />
           {exercises.map((exercise) => (
             <Picker.Item
               key={exercise._id}
@@ -165,13 +205,13 @@ const ProgressScreen = () => {
         </Picker>
         <TextInput
           style={styles.input}
-          placeholder={isWeightMode ? "Peso" : "Repeticiones"}
+          placeholder={isWeightMode ? "Peso" : "Ripetizioni"}
           keyboardType="numeric"
           value={isWeightMode ? weight : reps}
           onChangeText={isWeightMode ? setWeight : setReps}
         />
         <Button
-          title={isWeightMode ? "Agregar Peso" : "Agregar Repeticiones"}
+          title={isWeightMode ? "Aggiungi Peso" : "Aggiungi Ripetizioni"}
           onPress={handleAddProgress}
           color="#FFD700"
         />
@@ -184,7 +224,7 @@ const ProgressScreen = () => {
           color={isWeightMode ? "#FFD700" : "grey"}
         />
         <Button
-          title="REPS"
+          title="RIPETIZIONI"
           onPress={() => setIsWeightMode(false)}
           color={!isWeightMode ? "#FFD700" : "grey"}
         />
