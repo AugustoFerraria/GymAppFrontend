@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, Alert, StyleSheet, View, Text } from 'react-native';
 import { Button } from 'react-native-elements';
 import axios from 'axios';
@@ -18,11 +18,25 @@ const RegisterScreen = ({ navigation }) => {
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   const [role, setRole] = useState('user');
-
+  const [professorId, setProfessorId] = useState('');
+  const [professors, setProfessors] = useState([]);
   const [errors, setErrors] = useState({});
 
+  useEffect(() => {
+    const fetchProfessors = async () => {
+      try {
+        const response = await axios.get('http://localhost:3001/api/users/all');
+        setProfessors(response.data.filter(user => user.role === 'admin'));
+      } catch (error) {
+        console.error('Errore nel recupero dei professori:', error);
+      }
+    };
+
+    fetchProfessors();
+  }, []);
+
   const handleRegister = async () => {
-    console.log('Register button pressed');
+    console.log('Pulsante di registrazione premuto');
     let validationErrors = {};
 
     if (!name) validationErrors.name = "Questo campo è obbligatorio";
@@ -32,9 +46,12 @@ const RegisterScreen = ({ navigation }) => {
     if (!confirmPassword) validationErrors.confirmPassword = "Questo campo è obbligatorio";
     if (password !== confirmPassword) validationErrors.confirmPassword = "Le password non corrispondono";
 
+    if (role === 'user' && !professorId) {
+      validationErrors.professorId = "Devi selezionare un professore";
+    }
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      console.log('Validation errors:', validationErrors);
       return;
     }
 
@@ -50,18 +67,27 @@ const RegisterScreen = ({ navigation }) => {
         weight: weight ? parseFloat(weight) : null,
         height: height ? parseFloat(height) : null,
         role,
+        professorId: role === 'user' ? professorId : null,
       });
-      console.log('Registration successful', res.data);
+
       const { token, user } = res.data;
-      await AsyncStorage.setItem('token', token);
-      console.log('Token stored in AsyncStorage');
-      navigation.navigate('Home', { role: user.role });
+
+      if (token) {
+        await AsyncStorage.setItem('token', token);
+        console.log('Token stored, navigating to Home');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Home', params: { role: user.role } }],
+        });
+      } else {
+        console.error('No token returned after registration');
+      }
     } catch (error) {
       console.error('Errore durante la registrazione:', error.response ? error.response.data : error.message);
-      if (error.response && error.response.data && error.response.data.msg) {
-        setErrors({ general: error.response.data.msg });
+      if (error.response && error.response.data) {
+        setErrors({ general: error.response.data.error });
       } else {
-        Alert.alert('Errore di registrazione', 'Errore del server');
+        Alert.alert('Errore durante la registrazione', 'C\'è stato un problema durante la registrazione dell\'utente');
       }
     }
   };
@@ -130,6 +156,18 @@ const RegisterScreen = ({ navigation }) => {
               { label: 'Admin', value: 'admin' },
             ]}
           />
+          {role === 'user' && (
+            <PickerField
+              label="Seleziona Professore"
+              selectedValue={professorId}
+              onValueChange={setProfessorId}
+              items={[
+                { label: 'Seleziona Professore', value: '' }, // Opción predeterminada
+                ...professors.map(prof => ({ label: `${prof.name} ${prof.surname}`, value: prof._id }))
+              ]}
+              error={errors.professorId}
+            />
+          )}
           <Button title="Registrati" onPress={handleRegister} buttonStyle={styles.button} />
           <Text
             style={styles.link}
@@ -148,7 +186,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     padding: 16,
-    margin: 0,
   },
   innerContainer: {
     paddingTop: 25,
