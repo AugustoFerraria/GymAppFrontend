@@ -5,24 +5,22 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Provider as PaperProvider } from "react-native-paper";
 import { Icon } from "react-native-elements";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import jwt_decode from "jwt-decode";
-
 // Importar pantallas
 import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
-import RutinaScreen from "./src/screens/RutinaScreen";
+import TrainerScreen from "./src/screens/TrainerScreen";
 import ProgressScreen from "./src/screens/ProgressScreen";
 import ExerciseDetailScreen from "./src/screens/ExerciseDetailScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import CreateExerciseScreen from "./src/screens/CreateExerciseScreen";
-import TrainerScreen from "./src/screens/TrainerScreen";
 import CreateRoutineScreen from "./src/screens/CreateRoutineScreen";
 import ViewRoutineScreen from "./src/screens/ViewRoutineScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function RutinaStackNavigator() {
+// Se unifica TrainerScreen para manejar tanto admin como usuario
+function TrainerStackNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -32,19 +30,25 @@ function RutinaStackNavigator() {
       }}
     >
       <Stack.Screen
-        name="Rutina"
-        component={RutinaScreen}
-        options={{ headerTitle: "Rutina" }}
+        name="Alunni"
+        component={TrainerScreen}
+        options={{ headerTitle: "Alunni", headerLeft: null }}
+      />
+      <Stack.Screen
+        name="CreateRoutine"
+        component={CreateRoutineScreen}
+        options={{ headerTitle: "Crea Routine" }}
       />
       <Stack.Screen
         name="ViewRoutine"
         component={ViewRoutineScreen}
-        options={{ headerTitle: "Ver Rutina" }}
+        options={{ headerTitle: "Vedi Routine" }}
       />
     </Stack.Navigator>
   );
 }
 
+// Mantenemos ProgressStackNavigator y ProfileStackNavigator como estaban
 function ProgressStackNavigator() {
   return (
     <Stack.Navigator
@@ -68,6 +72,7 @@ function ProgressStackNavigator() {
               containerStyle={{ marginRight: 15 }}
             />
           ),
+          headerLeft: null,
         })}
       />
       <Stack.Screen
@@ -96,35 +101,7 @@ function ProfileStackNavigator() {
       <Stack.Screen
         name="Perfil"
         component={ProfileScreen}
-        options={{ headerTitle: "Profilo" }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-function TrainerStackNavigator() {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: "#FFD700" },
-        headerTintColor: "#fff",
-        headerTitleAlign: "center",
-      }}
-    >
-      <Stack.Screen
-        name="Alunni"
-        component={TrainerScreen}
-        options={{ headerTitle: "Alunni" }}
-      />
-      <Stack.Screen
-        name="CreateRoutine"
-        component={CreateRoutineScreen}
-        options={{ headerTitle: "Crea Routine" }}
-      />
-      <Stack.Screen
-        name="ViewRoutine"
-        component={ViewRoutineScreen}
-        options={{ headerTitle: "Vedi Routine" }}
+        options={{ headerTitle: "Profilo", headerLeft: null }}
       />
     </Stack.Navigator>
   );
@@ -136,7 +113,7 @@ function HomeTabNavigator({ userRole }) {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
-          if (route.name === "Rutina" || route.name === "Alunni") {
+          if (route.name === "Alunni" || route.name === "Rutina") {
             iconName = "home";
           } else if (route.name === "Progresos") {
             iconName = "fitness-center";
@@ -161,7 +138,7 @@ function HomeTabNavigator({ userRole }) {
       ) : (
         <Tab.Screen
           name="Rutina"
-          component={RutinaStackNavigator}
+          component={TrainerScreen} // Usamos TrainerScreen que maneja ambos roles
           options={{ title: "Rutina" }}
         />
       )}
@@ -179,6 +156,25 @@ function HomeTabNavigator({ userRole }) {
   );
 }
 
+// Función para decodificar JWT manualmente
+const decodeJWT = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Error decoding JWT:', error);
+    return null;
+  }
+};
+
 export default function App() {
   const [initialRoute, setInitialRoute] = useState("Login");
   const [userRole, setUserRole] = useState(null);
@@ -188,8 +184,8 @@ export default function App() {
       const token = await AsyncStorage.getItem("token");
       if (token) {
         try {
-          const decoded = jwt_decode(token);
-          console.log("Decoded token:", decoded); // Verificar qué hay en el token
+          const decoded = decodeJWT(token);
+          console.log("Decoded token:", decoded);
           setUserRole(decoded.user.role);
           if (decoded.exp * 1000 > Date.now()) {
             setInitialRoute("Home");

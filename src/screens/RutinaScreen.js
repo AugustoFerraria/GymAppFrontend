@@ -1,7 +1,6 @@
-// Función para decodificar el JWT
 function decodeJWT(token) {
   try {
-    const base64Url = token.split('.')[1]; // Obtener la parte del payload
+    const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
       return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
@@ -14,7 +13,6 @@ function decodeJWT(token) {
   }
 }
 
-// Ejemplo de uso en RutinaScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import axios from 'axios';
@@ -32,7 +30,7 @@ const RutinaScreen = ({ navigation }) => {
         console.log('Token from AsyncStorage:', token);
 
         if (token) {
-          const decoded = decodeJWT(token); // Usar la función manual
+          const decoded = decodeJWT(token);
           console.log('Decoded user:', decoded);
 
           setUser(decoded.user);

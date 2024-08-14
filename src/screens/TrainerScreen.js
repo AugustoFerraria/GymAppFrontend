@@ -1,107 +1,137 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { List, Button, Text } from 'react-native-paper';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Button, ListItem } from 'react-native-elements';
-import jwt_decode from 'jwt-decode';
 
 const TrainerScreen = ({ navigation }) => {
-  const [user, setUser] = useState(null);
   const [students, setStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [expanded, setExpanded] = useState({});
+  const [routines, setRoutines] = useState({});
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = await AsyncStorage.getItem('token');
-      if (token) {
-        const decoded = jwt_decode(token);
-        setUser(decoded.user);
-      }
-    };
-
     const fetchStudents = async () => {
-      const token = await AsyncStorage.getItem('token');
-      if (token) {
+      try {
+        const token = await AsyncStorage.getItem('token');
         const config = {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {
+            'x-auth-token': token,
+          },
         };
-        console.log('Fetching students with config:', config); // Agrega este log para depurar
-        try {
-          const response = await axios.get('http://localhost:3001/api/users/students', config);
-          setStudents(response.data);
-          console.log('Students fetched:', response.data); // Agrega este log para depurar
-        } catch (error) {
-          console.error('Error fetching students:', error);
-        }
+        const response = await axios.get('http://localhost:3001/api/users/students', config);
+        setStudents(response.data);
+      } catch (error) {
+        console.error('Error fetching students:', error);
       }
     };
 
-    fetchUser();
     fetchStudents();
   }, []);
 
-  const toggleDropdown = (studentId) => {
-    setSelectedStudentId(selectedStudentId === studentId ? null : studentId);
+  const handlePress = async (studentId) => {
+    setExpanded((prev) => ({ ...prev, [studentId]: !prev[studentId] }));
+
+    if (!routines[studentId]) {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const config = {
+          headers: {
+            'x-auth-token': token,
+          },
+        };
+        const response = await axios.get(`http://localhost:3001/api/routines/student/${studentId}`, config);
+        setRoutines((prev) => ({ ...prev, [studentId]: response.data }));
+      } catch (error) {
+        console.error('Error fetching routines:', error);
+      }
+    }
   };
 
-  const renderStudent = ({ item }) => (
-    <View>
-      <TouchableOpacity onPress={() => toggleDropdown(item._id)}>
-        <ListItem bottomDivider>
-          <ListItem.Content>
-            <ListItem.Title>{item.name} {item.surname}</ListItem.Title>
-            <ListItem.Subtitle>{item.email}</ListItem.Subtitle>
-          </ListItem.Content>
-        </ListItem>
-      </TouchableOpacity>
-      {selectedStudentId === item._id && (
-        <View style={styles.dropdown}>
-          <Button
-            title="Crear Rutina"
-            onPress={() => navigation.navigate('CreateRoutine', { studentId: item._id })}
-          />
-          <Button
-            title="Ver Rutina"
-            onPress={() => navigation.navigate('ViewRoutine', { studentId: item._id })}
-          />
-        </View>
-      )}
-    </View>
-  );
+  const renderRoutines = (studentId) => {
+    const studentRoutines = routines[studentId] || [];
 
-  if (!user) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading...</Text>
+    if (studentRoutines.length === 0) {
+      return (
+        <View style={styles.emptyRoutineContainer}>
+          <Text style={styles.emptyRoutineText}>Crea la prima routine per questo studente</Text>
+          <Button
+            mode="contained"
+            onPress={() => navigation.navigate('CreateRoutine', { studentId })}
+            style={styles.fab}
+            icon="plus"
+          >
+            Crea Routine
+          </Button>
+        </View>
+      );
+    }
+
+    return studentRoutines.map((routine) => (
+      <View key={routine._id} style={styles.routineItem}>
+        <Text style={styles.routineText}>{routine.name}</Text>
       </View>
-    );
-  }
+    ));
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Alumnos</Text>
-      <FlatList
-        data={students}
-        renderItem={renderStudent}
-        keyExtractor={item => item._id}
-      />
-    </View>
+    <ScrollView>
+      <View style={styles.container}>
+        {students.map((student) => (
+          <View key={student._id} style={styles.cardContainer}>
+            <List.Accordion
+              title={`${student.name} ${student.surname}`}
+              expanded={expanded[student._id] || false}
+              onPress={() => handlePress(student._id)}
+              style={styles.accordion}
+              titleStyle={styles.accordionTitle}
+            >
+              {renderRoutines(student._id)}
+            </List.Accordion>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 10,
   },
-  title: {
-    fontSize: 24,
+  cardContainer: {
+    marginVertical: 5,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+  },
+  accordion: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#FFD700',
+  },
+  accordionTitle: {
+    color: '#252525',
+    fontWeight: 'bold',
+  },
+  emptyRoutineContainer: {
+    padding: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  emptyRoutineText: {
+    color: '#303030',
     marginBottom: 10,
   },
-  dropdown: {
+  routineItem: {
     padding: 10,
-    backgroundColor: '#f0f0f0',
-    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CCC',
+  },
+  routineText: {
+    color: '#757575',
+  },
+  fab: {
+    backgroundColor: '#FFD700',
+    borderRadius: 25,
   },
 });
 
