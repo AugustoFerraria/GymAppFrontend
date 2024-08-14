@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { List, Button, Text } from 'react-native-paper';
+import { List, Button, Text, IconButton } from 'react-native-paper';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -69,6 +69,18 @@ const TrainerScreen = ({ navigation }) => {
     return studentRoutines.map((routine) => (
       <View key={routine._id} style={styles.routineItem}>
         <Text style={styles.routineText}>{routine.name}</Text>
+        <View style={styles.buttonContainer}>
+          <IconButton
+            icon="eye"
+            onPress={() => navigation.navigate('ViewRoutine', { routineId: routine._id })}
+            style={styles.iconButton}
+          />
+          <IconButton
+            icon="pencil"
+            onPress={() => navigation.navigate('EditRoutine', { routineId: routine._id })}
+            style={styles.iconButton}
+          />
+        </View>
       </View>
     ));
   };
@@ -125,9 +137,19 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#CCC',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   routineText: {
     color: '#757575',
+    flex: 1,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+  },
+  iconButton: {
+    marginLeft: 10,
   },
   fab: {
     backgroundColor: '#FFD700',

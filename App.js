@@ -5,7 +5,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Provider as PaperProvider } from "react-native-paper";
 import { Icon } from "react-native-elements";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// Importar pantallas
 import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
 import TrainerScreen from "./src/screens/TrainerScreen";
@@ -15,6 +14,7 @@ import ProfileScreen from "./src/screens/ProfileScreen";
 import CreateExerciseScreen from "./src/screens/CreateExerciseScreen";
 import CreateRoutineScreen from "./src/screens/CreateRoutineScreen";
 import ViewRoutineScreen from "./src/screens/ViewRoutineScreen";
+import EditRoutineScreen from "./src/screens/EditRoutineScreen"; // Importa la pantalla de edición
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -43,6 +43,11 @@ function TrainerStackNavigator() {
         name="ViewRoutine"
         component={ViewRoutineScreen}
         options={{ headerTitle: "Vedi Routine" }}
+      />
+      <Stack.Screen
+        name="EditRoutine"
+        component={EditRoutineScreen} // Agrega la pantalla de edición
+        options={{ headerTitle: "Modifica Routine" }}
       />
     </Stack.Navigator>
   );
@@ -159,18 +164,18 @@ function HomeTabNavigator({ userRole }) {
 // Función para decodificar JWT manualmente
 const decodeJWT = (token) => {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
     );
 
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error('Error decoding JWT:', error);
+    console.error("Error decoding JWT:", error);
     return null;
   }
 };
