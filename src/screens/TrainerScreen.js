@@ -5,11 +5,33 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TrainerScreen = ({ navigation }) => {
+  const [user, setUser] = useState(null);
   const [students, setStudents] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [routines, setRoutines] = useState({});
 
   useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const config = {
+          headers: {
+            'x-auth-token': token,
+          },
+        };
+        const response = await axios.get('http://localhost:3001/api/auth/user', config);
+        setUser(response.data);
+
+        if (response.data.role === 'admin') {
+          fetchStudents();
+        } else {
+          fetchRoutines(response.data._id);
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+
     const fetchStudents = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
@@ -25,25 +47,28 @@ const TrainerScreen = ({ navigation }) => {
       }
     };
 
-    fetchStudents();
+    fetchUser();
   }, []);
+
+  const fetchRoutines = async (studentId) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const config = {
+        headers: {
+          'x-auth-token': token,
+        },
+      };
+      const response = await axios.get(`http://localhost:3001/api/routines/student/${studentId}`, config);
+      setRoutines((prev) => ({ ...prev, [studentId]: response.data }));
+    } catch (error) {
+      console.error('Error fetching routines:', error);
+    }
+  };
 
   const handlePress = async (studentId) => {
     setExpanded((prev) => ({ ...prev, [studentId]: !prev[studentId] }));
-
     if (!routines[studentId]) {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const config = {
-          headers: {
-            'x-auth-token': token,
-          },
-        };
-        const response = await axios.get(`http://localhost:3001/api/routines/student/${studentId}`, config);
-        setRoutines((prev) => ({ ...prev, [studentId]: response.data }));
-      } catch (error) {
-        console.error('Error fetching routines:', error);
-      }
+      fetchRoutines(studentId);
     }
   };
 
@@ -53,15 +78,19 @@ const TrainerScreen = ({ navigation }) => {
     if (studentRoutines.length === 0) {
       return (
         <View style={styles.emptyRoutineContainer}>
-          <Text style={styles.emptyRoutineText}>Crea la prima routine per questo studente</Text>
-          <Button
-            mode="contained"
-            onPress={() => navigation.navigate('CreateRoutine', { studentId })}
-            style={styles.fab}
-            icon="plus"
-          >
-            Crea Routine
-          </Button>
+          <Text style={styles.emptyRoutineText}>
+            {user.role === 'admin' ? 'Crea la prima routine per questo studente' : 'Non ci sono routine assegnate'}
+          </Text>
+          {user.role === 'admin' && (
+            <Button
+              mode="contained"
+              onPress={() => navigation.navigate('CreateRoutine', { studentId })}
+              style={styles.fab}
+              icon="plus"
+            >
+              Crea Routine
+            </Button>
+          )}
         </View>
       );
     }
@@ -75,11 +104,13 @@ const TrainerScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('ViewRoutine', { routineId: routine._id })}
             style={styles.iconButton}
           />
-          <IconButton
-            icon="pencil"
-            onPress={() => navigation.navigate('EditRoutine', { routineId: routine._id })}
-            style={styles.iconButton}
-          />
+          {user.role === 'admin' && (
+            <IconButton
+              icon="pencil"
+              onPress={() => navigation.navigate('EditRoutine', { routineId: routine._id })}
+              style={styles.iconButton}
+            />
+          )}
         </View>
       </View>
     ));
@@ -88,19 +119,23 @@ const TrainerScreen = ({ navigation }) => {
   return (
     <ScrollView>
       <View style={styles.container}>
-        {students.map((student) => (
-          <View key={student._id} style={styles.cardContainer}>
-            <List.Accordion
-              title={`${student.name} ${student.surname}`}
-              expanded={expanded[student._id] || false}
-              onPress={() => handlePress(student._id)}
-              style={styles.accordion}
-              titleStyle={styles.accordionTitle}
-            >
-              {renderRoutines(student._id)}
-            </List.Accordion>
-          </View>
-        ))}
+        {user && user.role === 'admin' ? (
+          students.map((student) => (
+            <View key={student._id} style={styles.cardContainer}>
+              <List.Accordion
+                title={`${student.name} ${student.surname}`}
+                expanded={expanded[student._id] || false}
+                onPress={() => handlePress(student._id)}
+                style={styles.accordion}
+                titleStyle={styles.accordionTitle}
+              >
+                {renderRoutines(student._id)}
+              </List.Accordion>
+            </View>
+          ))
+        ) : (
+          user && renderRoutines(user._id)
+        )}
       </View>
     </ScrollView>
   );

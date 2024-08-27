@@ -14,12 +14,11 @@ import ProfileScreen from "./src/screens/ProfileScreen";
 import CreateExerciseScreen from "./src/screens/CreateExerciseScreen";
 import CreateRoutineScreen from "./src/screens/CreateRoutineScreen";
 import ViewRoutineScreen from "./src/screens/ViewRoutineScreen";
-import EditRoutineScreen from "./src/screens/EditRoutineScreen"; // Importa la pantalla de edición
+import EditRoutineScreen from "./src/screens/EditRoutineScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Se unifica TrainerScreen para manejar tanto admin como usuario
 function TrainerStackNavigator() {
   return (
     <Stack.Navigator
@@ -30,9 +29,9 @@ function TrainerStackNavigator() {
       }}
     >
       <Stack.Screen
-        name="Alunni"
+        name="Routine"
         component={TrainerScreen}
-        options={{ headerTitle: "Alunni", headerLeft: null }}
+        options={{ headerTitle: "Routine", headerLeft: null }}
       />
       <Stack.Screen
         name="CreateRoutine"
@@ -46,15 +45,30 @@ function TrainerStackNavigator() {
       />
       <Stack.Screen
         name="EditRoutine"
-        component={EditRoutineScreen} // Agrega la pantalla de edición
+        component={EditRoutineScreen}
         options={{ headerTitle: "Modifica Routine" }}
       />
     </Stack.Navigator>
   );
 }
 
-// Mantenemos ProgressStackNavigator y ProfileStackNavigator como estaban
 function ProgressStackNavigator() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkUserRole = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        const decodedToken = JSON.parse(atob(token.split(".")[1]));
+        if (decodedToken.user.role === "admin") {
+          setIsAdmin(true);
+        }
+      }
+    };
+
+    checkUserRole();
+  }, []);
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -68,15 +82,16 @@ function ProgressStackNavigator() {
         component={ProgressScreen}
         options={({ navigation }) => ({
           headerTitle: "Progressi",
-          headerRight: () => (
-            <Icon
-              name="add"
-              type="material"
-              color="#fff"
-              onPress={() => navigation.navigate("CreateExercise")}
-              containerStyle={{ marginRight: 15 }}
-            />
-          ),
+          headerRight: () =>
+            isAdmin ? (
+              <Icon
+                name="add"
+                type="material"
+                color="#fff"
+                onPress={() => navigation.navigate("CreateExercise")}
+                containerStyle={{ marginRight: 15 }}
+              />
+            ) : null,
           headerLeft: null,
         })}
       />
@@ -118,7 +133,7 @@ function HomeTabNavigator({ userRole }) {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
-          if (route.name === "Alunni" || route.name === "Rutina") {
+          if (route.name === "Routine" || route.name === "Rutina") {
             iconName = "home";
           } else if (route.name === "Progresos") {
             iconName = "fitness-center";
@@ -134,19 +149,11 @@ function HomeTabNavigator({ userRole }) {
         headerShown: false,
       })}
     >
-      {userRole === "admin" ? (
-        <Tab.Screen
-          name="Alunni"
-          component={TrainerStackNavigator}
-          options={{ title: "Alunni" }}
-        />
-      ) : (
-        <Tab.Screen
-          name="Rutina"
-          component={TrainerScreen} // Usamos TrainerScreen que maneja ambos roles
-          options={{ title: "Rutina" }}
-        />
-      )}
+      <Tab.Screen
+        name="Routine"
+        component={TrainerStackNavigator}
+        options={{ title: "Routine" }}
+      />
       <Tab.Screen
         name="Progresos"
         component={ProgressStackNavigator}
@@ -161,7 +168,6 @@ function HomeTabNavigator({ userRole }) {
   );
 }
 
-// Función para decodificar JWT manualmente
 const decodeJWT = (token) => {
   try {
     const base64Url = token.split(".")[1];
@@ -190,7 +196,6 @@ export default function App() {
       if (token) {
         try {
           const decoded = decodeJWT(token);
-          console.log("Decoded token:", decoded);
           setUserRole(decoded.user.role);
           if (decoded.exp * 1000 > Date.now()) {
             setInitialRoute("Home");

@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, Alert } from 'react-native';
-import { Button, Icon } from 'react-native-elements';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TextInput, Alert } from "react-native";
+import { Button, Icon } from "react-native-elements";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ProfileScreen = ({ navigation }) => {
   const [userData, setUserData] = useState({
-    name: '',
-    surname: '',
-    email: '',
-    age: '',
-    height: '',
-    weight: '',
-    role: '',
+    name: "",
+    surname: "",
+    email: "",
+    age: "",
+    height: "",
+    weight: "",
+    role: "",
   });
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchToken = async () => {
-      const storedToken = await AsyncStorage.getItem('token');
+      const storedToken = await AsyncStorage.getItem("token");
       if (storedToken) {
         setToken(storedToken);
         fetchUserData(storedToken);
       } else {
-        Alert.alert('Errore', 'Nessun token trovato');
+        Alert.alert("Errore", "Nessun token trovato");
       }
     };
     fetchToken();
@@ -32,44 +32,46 @@ const ProfileScreen = ({ navigation }) => {
 
   const fetchUserData = async (token) => {
     try {
-      const res = await axios.get('http://localhost:3001/api/users/me', {
-        headers: { 'x-auth-token': token }
+      const res = await axios.get("http://localhost:3001/api/users/me", {
+        headers: { "x-auth-token": token },
       });
       setUserData({
         ...res.data,
-        age: res.data.age ? res.data.age.toString() : '',
-        height: res.data.height ? res.data.height.toString() : '',
-        weight: res.data.weight ? res.data.weight.toString() : '',
+        age: res.data.age ? res.data.age.toString() : "",
+        height: res.data.height ? res.data.height.toString() : "",
+        weight: res.data.weight ? res.data.weight.toString() : "",
       });
     } catch (error) {
-      console.error('Errore durante il recupero dei dati utente', error);
+      console.error("Errore durante il recupero dei dati utente", error);
     }
   };
 
   const handleSave = async () => {
-    console.log('Salvataggio dati utente:', userData);
     try {
-      const response = await axios.put('http://localhost:3001/api/users/me', {
-        name: userData.name,
-        surname: userData.surname,
-        age: userData.age ? parseInt(userData.age) : null,
-        height: userData.height ? parseFloat(userData.height) : null,
-        weight: userData.weight ? parseFloat(userData.weight) : null,
-      }, {
-        headers: { 'x-auth-token': token }
-      });
-      console.log('Risposta:', response.data);
-      Alert.alert('Successo', 'Dati utente aggiornati con successo');
+      const response = await axios.put(
+        "http://localhost:3001/api/users/me",
+        {
+          name: userData.name,
+          surname: userData.surname,
+          age: userData.age ? parseInt(userData.age) : null,
+          height: userData.height ? parseFloat(userData.height) : null,
+          weight: userData.weight ? parseFloat(userData.weight) : null,
+        },
+        {
+          headers: { "x-auth-token": token },
+        }
+      );
+      Alert.alert("Successo", "Dati utente aggiornati con successo");
       setIsEditing(false);
     } catch (error) {
-      console.error('Errore durante l\'aggiornamento dei dati utente', error);
-      Alert.alert('Errore', 'Impossibile aggiornare i dati utente');
+      console.error("Errore durante l'aggiornamento dei dati utente", error);
+      Alert.alert("Errore", "Impossibile aggiornare i dati utente");
     }
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('token');
-    navigation.navigate('Login');
+    await AsyncStorage.removeItem("token");
+    navigation.navigate("Login");
   };
 
   React.useLayoutEffect(() => {
@@ -81,9 +83,9 @@ const ProfileScreen = ({ navigation }) => {
           onPress={() => setIsEditing(true)}
         />
       ),
-      headerStyle: { backgroundColor: '#FFD700' },
-      headerTintColor: '#fff',
-      headerTitle: 'Profilo',
+      headerStyle: { backgroundColor: "#FFD700" },
+      headerTintColor: "#fff",
+      headerTitle: "Profilo",
     });
   }, [navigation]);
 
@@ -104,11 +106,7 @@ const ProfileScreen = ({ navigation }) => {
         editable={isEditing}
       />
       <Text style={styles.label}>Email</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.email}
-        editable={false}
-      />
+      <TextInput style={styles.input} value={userData.email} editable={false} />
       <Text style={styles.label}>Età</Text>
       <TextInput
         style={styles.input}
@@ -134,11 +132,7 @@ const ProfileScreen = ({ navigation }) => {
         editable={isEditing}
       />
       <Text style={styles.label}>Ruolo</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.role}
-        editable={false}
-      />
+      <TextInput style={styles.input} value={userData.role} editable={false} />
       <View style={styles.buttonContainer}>
         {isEditing && (
           <Button
@@ -170,18 +164,18 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     marginBottom: 16,
     paddingLeft: 8,
   },
   buttonContainer: {
-    flexDirection: 'column',
-    alignItems: 'flex-end',
+    flexDirection: "column",
+    alignItems: "flex-end",
     marginTop: 20,
   },
   saveButton: {
-    backgroundColor: '#2089dc',
+    backgroundColor: "#2089dc",
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
@@ -189,14 +183,14 @@ const styles = StyleSheet.create({
     width: 150,
   },
   logoutButton: {
-    backgroundColor: 'red',
+    backgroundColor: "red",
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
     width: 150,
   },
   editButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 5,
