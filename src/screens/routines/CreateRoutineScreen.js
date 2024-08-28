@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Button } from 'react-native-paper';
+import { Button, IconButton } from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
 
 const CreateRoutineScreen = ({ route, navigation }) => {
@@ -83,6 +83,10 @@ const CreateRoutineScreen = ({ route, navigation }) => {
       setSets("");
       setNotes("");
     }
+  };
+
+  const handleRemoveExercise = (index) => {
+    setExercises((prevExercises) => prevExercises.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -191,6 +195,7 @@ const CreateRoutineScreen = ({ route, navigation }) => {
             <Text style={styles.tableHeaderText}>Ripetizioni</Text>
             <Text style={styles.tableHeaderText}>Serie</Text>
             <Text style={styles.tableHeaderText}>Note</Text>
+            <Text style={styles.tableHeaderText}></Text> {/* Columna para el ícono */}
           </View>
           {exercises.map((exercise, index) => (
             <View key={index} style={styles.tableRow}>
@@ -200,6 +205,12 @@ const CreateRoutineScreen = ({ route, navigation }) => {
               <Text style={styles.tableCellText}>{exercise.quantity}</Text>
               <Text style={styles.tableCellText}>{exercise.sets}</Text>
               <Text style={styles.tableCellText}>{exercise.notes}</Text>
+              <IconButton
+                icon="delete"
+                color="#FF0000"
+                size={20}
+                onPress={() => handleRemoveExercise(index)}
+              />
             </View>
           ))}
         </View>

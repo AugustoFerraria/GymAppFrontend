@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TextInput, Text, ScrollView } from 'react-native';
-import { Button } from 'react-native-paper';
+import { Button, IconButton } from 'react-native-paper';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -119,6 +119,7 @@ const EditRoutineScreen = ({ route, navigation }) => {
           <Text style={styles.tableHeaderText}>Ripetizioni</Text>
           <Text style={styles.tableHeaderText}>Serie</Text>
           <Text style={styles.tableHeaderText}>Note</Text>
+          <Text style={styles.tableHeaderText}></Text> {/* Columna para el ícono */}
         </View>
         {routine.exercises.map((exercise, index) => (
           <View key={index} style={styles.tableRow}>
@@ -126,7 +127,12 @@ const EditRoutineScreen = ({ route, navigation }) => {
             <Text style={styles.tableCellText}>{exercise.quantity}</Text>
             <Text style={styles.tableCellText}>{exercise.sets}</Text>
             <Text style={styles.tableCellText}>{exercise.notes}</Text>
-            <Button onPress={() => handleRemoveExercise(index)}>Rimuovi</Button>
+            <IconButton
+              icon="delete"
+              color="#FF0000"
+              size={20}
+              onPress={() => handleRemoveExercise(index)}
+            />
           </View>
         ))}
       </View>
