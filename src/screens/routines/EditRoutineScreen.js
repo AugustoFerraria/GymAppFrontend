@@ -11,6 +11,8 @@ const EditRoutineScreen = ({ route, navigation }) => {
   const [exercises, setExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [quantity, setQuantity] = useState('');
+  const [sets, setSets] = useState('');
+  const [notes, setNotes] = useState('');
   const [openDropdown, setOpenDropdown] = useState(false);
 
   useEffect(() => {
@@ -54,11 +56,13 @@ const EditRoutineScreen = ({ route, navigation }) => {
         ...prevRoutine,
         exercises: [
           ...prevRoutine.exercises,
-          { exerciseId: selectedExercise, quantity: parseInt(quantity, 10) }
+          { exerciseId: selectedExercise, quantity: parseInt(quantity, 10), sets: parseInt(sets, 10) || 1, notes: notes || '' }
         ],
       }));
       setSelectedExercise(null);
       setQuantity('');
+      setSets('');
+      setNotes('');
     }
   };
 
@@ -109,13 +113,23 @@ const EditRoutineScreen = ({ route, navigation }) => {
       />
 
       <Text style={styles.label}>Esercizi:</Text>
-      {routine.exercises.map((exercise, index) => (
-        <View key={index} style={styles.exerciseItem}>
-          <Text style={styles.exerciseText}>{exercise.exerciseId.name}</Text>
-          <Text style={styles.exerciseText}>{exercise.quantity}</Text>
-          <Button onPress={() => handleRemoveExercise(index)}>Rimuovi</Button>
+      <View style={styles.exerciseTable}>
+        <View style={styles.tableHeader}>
+          <Text style={styles.tableHeaderText}>Esercizio</Text>
+          <Text style={styles.tableHeaderText}>Ripetizioni</Text>
+          <Text style={styles.tableHeaderText}>Serie</Text>
+          <Text style={styles.tableHeaderText}>Note</Text>
         </View>
-      ))}
+        {routine.exercises.map((exercise, index) => (
+          <View key={index} style={styles.tableRow}>
+            <Text style={styles.tableCellText}>{exercise.exerciseId.name}</Text>
+            <Text style={styles.tableCellText}>{exercise.quantity}</Text>
+            <Text style={styles.tableCellText}>{exercise.sets}</Text>
+            <Text style={styles.tableCellText}>{exercise.notes}</Text>
+            <Button onPress={() => handleRemoveExercise(index)}>Rimuovi</Button>
+          </View>
+        ))}
+      </View>
 
       <DropDownPicker
         open={openDropdown}
@@ -130,8 +144,21 @@ const EditRoutineScreen = ({ route, navigation }) => {
         style={styles.input}
         value={quantity}
         onChangeText={setQuantity}
-        placeholder="Quantità"
+        placeholder="Ripetizioni"
         keyboardType="numeric"
+      />
+      <TextInput
+        style={styles.input}
+        value={sets}
+        onChangeText={setSets}
+        placeholder="Serie"
+        keyboardType="numeric"
+      />
+      <TextInput
+        style={styles.input}
+        value={notes}
+        onChangeText={setNotes}
+        placeholder="Note"
       />
       <Button mode="contained" onPress={handleAddExercise} style={styles.addButton}>
         Aggiungi esercizio
@@ -169,6 +196,36 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DDD',
   },
+  exerciseTable: {
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  tableHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    backgroundColor: "#FFD700",
+  },
+  tableHeaderText: {
+    fontWeight: "bold",
+    fontSize: 14,
+    color: "#000",
+    flex: 1,
+    textAlign: "center",
+  },
+  tableRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#DDD",
+  },
+  tableCellText: {
+    fontSize: 14,
+    color: "#333",
+    flex: 1,
+    textAlign: "center",
+  },
   addButton: {
     marginBottom: 16,
     backgroundColor: '#007BFF',
@@ -176,14 +233,6 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: '#FFD700',
   },
-  exerciseItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  exerciseText: {
-    color: '#151515',
-  }
 });
 
 export default EditRoutineScreen;

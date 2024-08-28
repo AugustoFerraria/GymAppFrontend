@@ -3,13 +3,13 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import DropDownPicker from "react-native-dropdown-picker";
+import { Button } from 'react-native-paper';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const CreateRoutineScreen = ({ route, navigation }) => {
   const { studentId } = route.params;
@@ -19,10 +19,12 @@ const CreateRoutineScreen = ({ route, navigation }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [exercises, setExercises] = useState([]);
-  const [exerciseId, setExerciseId] = useState(null);
+  const [selectedExercise, setSelectedExercise] = useState(null);
   const [quantity, setQuantity] = useState("");
+  const [sets, setSets] = useState("");
+  const [notes, setNotes] = useState("");
   const [exerciseList, setExerciseList] = useState([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(false);
 
   useEffect(() => {
     const fetchStudentAndProfessor = async () => {
@@ -55,11 +57,12 @@ const CreateRoutineScreen = ({ route, navigation }) => {
           "http://localhost:3001/api/exercises/all",
           config
         );
-        const exerciseItems = exercisesResponse.data.map((exercise) => ({
-          label: exercise.name,
-          value: exercise._id,
-        }));
-        setExerciseList(exerciseItems);
+        setExerciseList(
+          exercisesResponse.data.map((exercise) => ({
+            label: exercise.name,
+            value: exercise._id,
+          }))
+        );
       } catch (error) {
         console.error(
           "Error fetching student, professor, or exercises:",
@@ -72,15 +75,22 @@ const CreateRoutineScreen = ({ route, navigation }) => {
   }, [studentId]);
 
   const handleAddExercise = () => {
-    if (exerciseId && quantity) {
-      const newExercise = { exerciseId, quantity };
+    if (selectedExercise && quantity) {
+      const newExercise = { exerciseId: selectedExercise, quantity, sets, notes };
       setExercises([...exercises, newExercise]);
-      setExerciseId(null);
+      setSelectedExercise(null);
       setQuantity("");
+      setSets("");
+      setNotes("");
     }
   };
 
   const handleSubmit = async () => {
+    if (!name || !description || exercises.length === 0 || !professor) {
+      Alert.alert('Error', 'Per favore, compila tutti i campi e aggiungi almeno un esercizio.');
+      return;
+    }
+
     try {
       const token = await AsyncStorage.getItem("token");
       const config = {
@@ -88,21 +98,33 @@ const CreateRoutineScreen = ({ route, navigation }) => {
           "x-auth-token": token,
         },
       };
+
+      const payload = {
+        name,
+        description,
+        studentId,
+        professorId: professor,
+        exercises: exercises.map((ex) => ({
+          exerciseId: ex.exerciseId,
+          quantity: ex.quantity,
+          sets: ex.sets || 1,
+          notes: ex.notes || "",
+        })),
+      };
+
       const response = await axios.post(
         "http://localhost:3001/api/routines/create",
-        {
-          name,
-          description,
-          studentId,
-          professorId: professor,
-          exercises,
-        },
+        payload,
         config
       );
 
-      navigation.goBack();
+      if (response.status === 201) {
+        navigation.goBack();
+        route.params?.onGoBack();
+      }
     } catch (error) {
       console.error("Error creating routine:", error);
+      Alert.alert('Error', 'Failed to create routine.');
     }
   };
 
@@ -125,56 +147,71 @@ const CreateRoutineScreen = ({ route, navigation }) => {
 
       <Text style={styles.label}>Esercizi:</Text>
       <DropDownPicker
-        open={isDropdownOpen}
-        value={exerciseId}
+        open={openDropdown}
+        value={selectedExercise}
         items={exerciseList}
-        setOpen={setIsDropdownOpen}
-        setValue={setExerciseId}
-        setItems={setExerciseList}
+        setOpen={setOpenDropdown}
+        setValue={setSelectedExercise}
         placeholder="Seleziona esercizio"
-        style={styles.dropdown}
-        placeholderStyle={{ color: "#999" }}
-        labelStyle={{ color: "#000" }}
-        containerStyle={{ marginBottom: 10 }}
+        style={styles.picker}
       />
       <TextInput
         style={styles.input}
-        placeholder="Quantità"
+        placeholder="Ripetizioni"
         value={quantity}
         onChangeText={setQuantity}
         keyboardType="numeric"
       />
-      <TouchableOpacity style={styles.addButton} onPress={handleAddExercise}>
-        <Text style={styles.addButtonText}>Aggiungi esercizio</Text>
-      </TouchableOpacity>
+      <TextInput
+        style={styles.input}
+        placeholder="Serie"
+        value={sets}
+        onChangeText={setSets}
+        keyboardType="numeric"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Note"
+        value={notes}
+        onChangeText={setNotes}
+      />
+
+      <Button
+        mode="contained"
+        onPress={handleAddExercise}
+        style={styles.addButton}
+      >
+        Aggiungi esercizio
+      </Button>
 
       {exercises.length > 0 && (
-        <View style={styles.exerciseList}>
-          {exercises.map((ex, index) => (
-            <View key={index} style={styles.exerciseItem}>
-              <Text>
-                {
-                  exerciseList.find((exItem) => exItem.value === ex.exerciseId)
-                    ?.label
-                }{" "}
-                - {ex.quantity} volte
+        <View style={styles.exerciseTable}>
+          <View style={styles.tableHeader}>
+            <Text style={styles.tableHeaderText}>Esercizio</Text>
+            <Text style={styles.tableHeaderText}>Ripetizioni</Text>
+            <Text style={styles.tableHeaderText}>Serie</Text>
+            <Text style={styles.tableHeaderText}>Note</Text>
+          </View>
+          {exercises.map((exercise, index) => (
+            <View key={index} style={styles.tableRow}>
+              <Text style={styles.tableCellText}>
+                {exerciseList.find((ex) => ex.value === exercise.exerciseId)?.label}
               </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  const newExercises = exercises.filter((_, i) => i !== index);
-                  setExercises(newExercises);
-                }}
-              >
-                <Text style={styles.removeButton}>Rimuovi</Text>
-              </TouchableOpacity>
+              <Text style={styles.tableCellText}>{exercise.quantity}</Text>
+              <Text style={styles.tableCellText}>{exercise.sets}</Text>
+              <Text style={styles.tableCellText}>{exercise.notes}</Text>
             </View>
           ))}
         </View>
       )}
 
-      <TouchableOpacity style={styles.createButton} onPress={handleSubmit}>
-        <Text style={styles.createButtonText}>Crea Routine</Text>
-      </TouchableOpacity>
+      <Button
+        mode="contained"
+        onPress={handleSubmit}
+        style={styles.saveButton}
+      >
+        Crea Routine
+      </Button>
     </ScrollView>
   );
 };
@@ -186,6 +223,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 8,
+    color: '#151515',
   },
   input: {
     height: 40,
@@ -194,44 +232,48 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingLeft: 10,
     marginBottom: 15,
+    color: '#151515',
   },
-  dropdown: {
+  picker: {
     borderColor: "#FFD700",
     borderRadius: 5,
-  },
-  exerciseList: {
-    marginTop: 10,
-  },
-  exerciseItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 5,
-  },
-  addButton: {
-    backgroundColor: "#007BFF",
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
     marginBottom: 15,
   },
-  addButtonText: {
-    color: "#FFF",
-    fontWeight: "bold",
+  addButton: {
+    backgroundColor: '#007BFF',
+    marginBottom: 16,
   },
-  createButton: {
+  saveButton: {
+    backgroundColor: '#FFD700',
+  },
+  exerciseTable: {
+    marginTop: 20,
+  },
+  tableHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
     backgroundColor: "#FFD700",
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
   },
-  createButtonText: {
+  tableHeaderText: {
+    fontWeight: "bold",
+    fontSize: 14,
     color: "#000",
-    fontWeight: "bold",
+    flex: 1,
+    textAlign: "center",
   },
-  removeButton: {
-    color: "#FF3B30",
-    fontWeight: "bold",
+  tableRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#DDD",
+  },
+  tableCellText: {
+    fontSize: 14,
+    color: "#333",
+    flex: 1,
+    textAlign: "center",
   },
 });
 

@@ -13,6 +13,7 @@ import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from "@react-native-picker/picker";
+import { useFocusEffect } from "@react-navigation/native";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -24,6 +25,7 @@ const ProgressScreen = () => {
   const [exercises, setExercises] = useState([]);
   const [userId, setUserId] = useState("");
   const [isWeightMode, setIsWeightMode] = useState(true);
+  const [shouldRefresh, setShouldRefresh] = useState(false);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -34,35 +36,37 @@ const ProgressScreen = () => {
       }
     };
 
-    const fetchExercises = async () => {
-      try {
-        const res = await axios.get("http://localhost:3001/api/exercises/all");
-        setExercises(res.data);
-      } catch (error) {
-        console.error("Error fetching exercises:", error);
-      }
-    };
-
     fetchUserId();
-    fetchExercises();
   }, []);
 
-  useEffect(() => {
-    const fetchProgresses = async () => {
-      if (userId && selectedExercise) {
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchExercises = async () => {
         try {
-          const res = await axios.get(
-            `http://localhost:3001/api/progresses?userId=${userId}&exerciseId=${selectedExercise}`
-          );
-          setData(res.data);
+          const res = await axios.get("http://localhost:3001/api/exercises/all");
+          setExercises(res.data);
         } catch (error) {
-          console.error("Errore durante il recupero dei dati di progresso:", error);
+          console.error("Error fetching exercises:", error);
         }
-      }
-    };
+      };
 
-    fetchProgresses();
-  }, [userId, selectedExercise]);
+      const fetchProgresses = async () => {
+        if (userId && selectedExercise) {
+          try {
+            const res = await axios.get(
+              `http://localhost:3001/api/progresses?userId=${userId}&exerciseId=${selectedExercise}`
+            );
+            setData(res.data);
+          } catch (error) {
+            console.error("Errore durante il recupero dei dati di progresso:", error);
+          }
+        }
+      };
+
+      fetchExercises();
+      fetchProgresses();
+    }, [shouldRefresh, userId, selectedExercise])
+  );
 
   const handleAddProgress = async () => {
     const value = isWeightMode ? parseFloat(weight) : parseInt(reps);

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import { DataTable } from 'react-native-paper';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -39,23 +38,22 @@ const ViewRoutineScreen = ({ route }) => {
     <View style={styles.container}>
       <Text style={styles.title}>{routine.name}</Text>
       <Text style={styles.description}>{routine.description}</Text>
-      <DataTable>
-        <DataTable.Header>
-          <DataTable.Title textStyle={styles.headerText}>Exercise</DataTable.Title>
-          <DataTable.Title textStyle={styles.headerText} numeric>Quantity</DataTable.Title>
-        </DataTable.Header>
-
+      <View style={styles.exerciseTable}>
+        <View style={styles.tableHeader}>
+          <Text style={styles.tableHeaderText}>Esercizio</Text>
+          <Text style={styles.tableHeaderText}>Ripetizioni</Text>
+          <Text style={styles.tableHeaderText}>Serie</Text>
+          <Text style={styles.tableHeaderText}>Note</Text>
+        </View>
         {routine.exercises.map((exercise, index) => (
-          <DataTable.Row key={index}>
-            <DataTable.Cell>
-              <Text style={styles.tableCellText}>{exercise.exerciseId.name}</Text>
-            </DataTable.Cell>
-            <DataTable.Cell numeric>
-              <Text style={styles.tableCellText}>{exercise.quantity}</Text>
-            </DataTable.Cell>
-          </DataTable.Row>
+          <View key={index} style={styles.tableRow}>
+            <Text style={styles.tableCellText}>{exercise.exerciseId.name}</Text>
+            <Text style={styles.tableCellText}>{exercise.quantity}</Text>
+            <Text style={styles.tableCellText}>{exercise.sets}</Text>
+            <Text style={styles.tableCellText}>{exercise.notes}</Text>
+          </View>
         ))}
-      </DataTable>
+      </View>
     </View>
   );
 };
@@ -77,13 +75,34 @@ const styles = StyleSheet.create({
     color: '#202020',
     marginBottom: 20,
   },
-  headerText: {
-    fontSize: 16,
-    color: '#151515',
+  exerciseTable: {
+    marginTop: 20,
+  },
+  tableHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    backgroundColor: "#FFD700",
+  },
+  tableHeaderText: {
+    fontWeight: "bold",
+    fontSize: 14,
+    color: "#000",
+    flex: 1,
+    textAlign: "center",
+  },
+  tableRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#DDD",
   },
   tableCellText: {
-    fontSize: 16,
-    color: '#151515',
+    fontSize: 14,
+    color: "#333",
+    flex: 1,
+    textAlign: "center",
   },
 });
 

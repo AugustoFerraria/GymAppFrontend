@@ -1,68 +1,92 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { List, Button, Text, IconButton } from 'react-native-paper';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, ScrollView, Text } from "react-native";
+import { List, Button, IconButton } from "react-native-paper";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 
-const TrainerScreen = ({ navigation }) => {
+const TrainerScreen = ({ navigation, route }) => {
   const [user, setUser] = useState(null);
   const [students, setStudents] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [routines, setRoutines] = useState({});
+  const [shouldRefresh, setShouldRefresh] = useState(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchUser = async () => {
+        try {
+          const token = await AsyncStorage.getItem("token");
+          const config = {
+            headers: {
+              "x-auth-token": token,
+            },
+          };
+          const response = await axios.get(
+            "http://localhost:3001/api/auth/user",
+            config
+          );
+          setUser(response.data);
+
+          if (response.data.role === "admin") {
+            fetchStudents();
+          } else {
+            fetchRoutines(response.data._id);
+          }
+        } catch (error) {
+          console.error("Error fetching user:", error);
+        }
+      };
+
+      const fetchStudents = async () => {
+        try {
+          const token = await AsyncStorage.getItem("token");
+          const config = {
+            headers: {
+              "x-auth-token": token,
+            },
+          };
+          const response = await axios.get(
+            "http://localhost:3001/api/users/students",
+            config
+          );
+          setStudents(response.data);
+        } catch (error) {
+          console.error("Error fetching students:", error);
+        }
+      };
+
+      fetchUser();
+    }, [])
+  );
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const config = {
-          headers: {
-            'x-auth-token': token,
-          },
-        };
-        const response = await axios.get('http://localhost:3001/api/auth/user', config);
-        setUser(response.data);
-
-        if (response.data.role === 'admin') {
-          fetchStudents();
-        } else {
-          fetchRoutines(response.data._id);
-        }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      }
-    };
-
-    const fetchStudents = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const config = {
-          headers: {
-            'x-auth-token': token,
-          },
-        };
-        const response = await axios.get('http://localhost:3001/api/users/students', config);
-        setStudents(response.data);
-      } catch (error) {
-        console.error('Error fetching students:', error);
-      }
-    };
-
-    fetchUser();
-  }, []);
+    if (route.params?.refresh || shouldRefresh) {
+      fetchAllRoutines();
+      setShouldRefresh(false);
+    }
+  }, [route.params?.refresh, shouldRefresh]);
 
   const fetchRoutines = async (studentId) => {
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       const config = {
         headers: {
-          'x-auth-token': token,
+          "x-auth-token": token,
         },
       };
-      const response = await axios.get(`http://localhost:3001/api/routines/student/${studentId}`, config);
+      const response = await axios.get(
+        `http://localhost:3001/api/routines/student/${studentId}`,
+        config
+      );
       setRoutines((prev) => ({ ...prev, [studentId]: response.data }));
     } catch (error) {
-      console.error('Error fetching routines:', error);
+      console.error("Error fetching routines:", error);
     }
+  };
+
+  const fetchAllRoutines = async () => {
+    students.forEach((student) => fetchRoutines(student._id));
   };
 
   const handlePress = async (studentId) => {
@@ -72,70 +96,112 @@ const TrainerScreen = ({ navigation }) => {
     }
   };
 
+  const handleCreateRoutinePress = (studentId) => {
+    navigation.navigate("CreateRoutine", {
+      studentId,
+      onGoBack: () => setShouldRefresh(true),
+    });
+  };
+
+  const handleDeleteRoutine = async (routineId, studentId) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const config = {
+        headers: {
+          "x-auth-token": token,
+        },
+      };
+
+      const response = await axios.delete(
+        `http://localhost:3001/api/routines/${routineId}`,
+        config
+      );
+
+      if (response.status === 200) {
+        setRoutines((prevRoutines) => {
+          const updatedRoutines = { ...prevRoutines };
+          updatedRoutines[studentId] = updatedRoutines[studentId].filter(
+            (routine) => routine._id !== routineId
+          );
+          return updatedRoutines;
+        });
+      }
+    } catch (error) {
+      console.error("Error al eliminar la rutina:", error);
+    }
+  };
+
   const renderRoutines = (studentId) => {
     const studentRoutines = routines[studentId] || [];
 
-    if (studentRoutines.length === 0) {
-      return (
-        <View style={styles.emptyRoutineContainer}>
-          <Text style={styles.emptyRoutineText}>
-            {user.role === 'admin' ? 'Crea la prima routine per questo studente' : 'Non ci sono routine assegnate'}
-          </Text>
-          {user.role === 'admin' && (
-            <Button
-              mode="contained"
-              onPress={() => navigation.navigate('CreateRoutine', { studentId })}
-              style={styles.fab}
-              icon="plus"
-            >
-              Crea Routine
-            </Button>
-          )}
-        </View>
-      );
-    }
-
-    return studentRoutines.map((routine) => (
-      <View key={routine._id} style={styles.routineItem}>
-        <Text style={styles.routineText}>{routine.name}</Text>
-        <View style={styles.buttonContainer}>
-          <IconButton
-            icon="eye"
-            onPress={() => navigation.navigate('ViewRoutine', { routineId: routine._id })}
-            style={styles.iconButton}
-          />
-          {user.role === 'admin' && (
-            <IconButton
-              icon="pencil"
-              onPress={() => navigation.navigate('EditRoutine', { routineId: routine._id })}
-              style={styles.iconButton}
-            />
-          )}
-        </View>
+    return (
+      <View>
+        {studentRoutines.map((routine) => (
+          <View key={routine._id} style={styles.routineItem}>
+            <Text style={styles.routineText}>{routine.name}</Text>
+            <View style={styles.buttonContainer}>
+              <IconButton
+                icon="eye"
+                onPress={() =>
+                  navigation.navigate("ViewRoutine", { routineId: routine._id })
+                }
+                style={styles.iconButton}
+                size={20}
+              />
+              {user.role === "admin" && (
+                <>
+                  <IconButton
+                    icon="pencil"
+                    onPress={() =>
+                      navigation.navigate("EditRoutine", {
+                        routineId: routine._id,
+                      })
+                    }
+                    style={styles.iconButton}
+                    size={20}
+                  />
+                  <IconButton
+                    icon="delete"
+                    onPress={() => handleDeleteRoutine(routine._id, studentId)}
+                    style={styles.iconButton}
+                    size={20}
+                  />
+                </>
+              )}
+            </View>
+          </View>
+        ))}
+        {user.role === "admin" && (
+          <Button
+            mode="contained"
+            onPress={() => handleCreateRoutinePress(studentId)}
+            style={styles.createRoutineButton}
+          >
+            Crea Nuova Routine
+          </Button>
+        )}
       </View>
-    ));
+    );
   };
 
   return (
     <ScrollView>
       <View style={styles.container}>
-        {user && user.role === 'admin' ? (
-          students.map((student) => (
-            <View key={student._id} style={styles.cardContainer}>
-              <List.Accordion
-                title={`${student.name} ${student.surname}`}
-                expanded={expanded[student._id] || false}
-                onPress={() => handlePress(student._id)}
-                style={styles.accordion}
-                titleStyle={styles.accordionTitle}
-              >
-                {renderRoutines(student._id)}
-              </List.Accordion>
-            </View>
-          ))
-        ) : (
-          user && renderRoutines(user._id)
-        )}
+        {user && user.role === "admin"
+          ? students.map((student) => (
+              <View key={student._id} style={styles.cardContainer}>
+                <List.Accordion
+                  title={`${student.name} ${student.surname}`}
+                  expanded={expanded[student._id] || false}
+                  onPress={() => handlePress(student._id)}
+                  style={styles.accordion}
+                  titleStyle={styles.accordionTitle}
+                >
+                  {renderRoutines(student._id)}
+                </List.Accordion>
+              </View>
+            ))
+          : user && renderRoutines(user._id)}
       </View>
     </ScrollView>
   );
@@ -148,47 +214,43 @@ const styles = StyleSheet.create({
   cardContainer: {
     marginVertical: 5,
     borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
   },
   accordion: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: '#FFD700',
+    borderColor: "#FFD700",
   },
   accordionTitle: {
-    color: '#252525',
-    fontWeight: 'bold',
-  },
-  emptyRoutineContainer: {
-    padding: 10,
-    backgroundColor: '#FFFFFF',
-  },
-  emptyRoutineText: {
-    color: '#303030',
-    marginBottom: 10,
+    color: "#252525",
+    fontWeight: "bold",
   },
   routineItem: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#CCC',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    borderBottomColor: "#CCC",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   routineText: {
-    color: '#757575',
+    color: "#757575",
     flex: 1,
   },
   buttonContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
+    alignItems: "center",
   },
   iconButton: {
-    marginLeft: 10,
+    marginHorizontal: -1,
   },
-  fab: {
-    backgroundColor: '#FFD700',
-    borderRadius: 25,
+  createRoutineButton: {
+    backgroundColor: "#FFD700",
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
   },
 });
 

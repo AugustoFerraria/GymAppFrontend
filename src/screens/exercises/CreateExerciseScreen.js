@@ -3,7 +3,7 @@ import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CreateExerciseScreen = ({ navigation }) => {
+const CreateExerciseScreen = ({ navigation, route }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
@@ -17,7 +17,8 @@ const CreateExerciseScreen = ({ navigation }) => {
         headers: { 'x-auth-token': token }
       });
       Alert.alert('Successo', 'Esercizio creato con successo');
-      navigation.goBack();
+      route.params?.onGoBack(); // Llama a la función de callback pasada desde la pantalla anterior
+      navigation.goBack(); // Regresa a la pantalla anterior
     } catch (error) {
       console.error(error);
       Alert.alert('Errore', "C'è stato un errore nella creazione dell'esercizio");
