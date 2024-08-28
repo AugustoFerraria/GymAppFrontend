@@ -3,10 +3,10 @@ import { ScrollView, Alert, StyleSheet, View, Text } from "react-native";
 import { Button } from "react-native-elements";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import InputField from "../components/InputField";
-import PickerField from "../components/PickerField";
-import ErrorText from "../components/ErrorText";
-import Background from "../components/Background";
+import InputField from "../../components/InputField";
+import PickerField from "../../components/PickerField";
+import ErrorText from "../../components/ErrorText";
+import Background from "../../components/Background";
 
 const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState("");

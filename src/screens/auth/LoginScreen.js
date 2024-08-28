@@ -3,7 +3,7 @@ import { View, TextInput, Alert, StyleSheet, Text } from "react-native";
 import { Button } from "react-native-elements";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Background from "../components/Background";
+import Background from "../../components/Background";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
